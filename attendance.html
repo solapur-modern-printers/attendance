@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">  
+    <title>Qr Code Reader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <style>
+      *{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+body{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0 10px;
+  background: #E3F2FD;
+}
+.wrapper{
+  height: 450px;
+  width: 650px;
+  border-radius: 7px;
+  background: #0B85FF;
+  padding: 30px 30px 35px;
+  transition: height 0.2s ease;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.wrapper.active{
+  height: 525px;
+}
+.wrapper form{
+  height: 390px;
+  display: flex;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  border-radius: 7px;
+  background: #fff;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.2s ease;
+}
+.content{
+  height: 100%;
+    width: 100%;
+}
+
+#qr-video{
+  height: 390px;
+  width: 590px;
+  background-color: #fff;
+}
+.wrapper.active form{
+  height: 225px;
+  pointer-events: none;
+}
+form img{
+  display: none;
+  max-width: 148px;
+}
+.wrapper.active form img{
+  display: block;
+}
+.wrapper.active form .content{
+  display: none;
+}
+form .content i{
+  color: #0B85FF;
+  font-size: 55px;
+}
+form .content p{
+  color: #0B85FF;
+  margin-top: 10px;
+  
+}
+.wrapper .details{
+  opacity: 0;
+  margin-top: 25px;
+  pointer-events: none;
+}
+.wrapper.active .details{
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.5s 0.05s ease;
+}
+.details textarea{
+  width: 100%;
+  height: 128px;
+  outline: none;
+  resize: none;
+  color: #fff;
+  font-size: 18px;
+  background: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  border: 1px solid #fff;
+}
+textarea::-webkit-scrollbar{
+  width: 0px;
+}
+textarea:hover::-webkit-scrollbar{
+  width: 5px;
+}
+textarea:hover::-webkit-scrollbar-track{
+  background: none;
+}
+textarea:hover::-webkit-scrollbar-thumb{
+  background: #fff;
+  border-radius: 8px;
+}
+.details .buttons{
+  display: flex;
+  margin-top: 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+.buttons button{
+  height: 55px;
+  outline: none;
+  border: none;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  color: #0B85FF;
+  border-radius: 5px;
+  background: #fff;
+  transition: transform 0.3s ease;
+  width: calc(100% / 2 - 10px);
+}
+.buttons button:active{
+  transform: scale(0.95);
+}
+
+@media (max-width: 450px) {
+  .wrapper{
+    padding: 25px;
+    height: 260px;
+  }
+  .wrapper.active{
+    height: 520px;
+  }
+}
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <form action="#">
+        
+        <img src="#" alt="qr-code">
+        <div class="content">
+          <video id="qr-video" width="100%" height="auto" autoplay></video>
+  <canvas id="qr-canvas" style="display: none;"></canvas>
+        </div>
+      </form>
+    
+    </div>
+
+    <script>
+      const video = document.getElementById('qr-video');
+const canvasElement = document.getElementById('qr-canvas');
+const canvas = canvasElement.getContext('2d');
+let isRequesting = false;
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+  .then((stream) => {
+    video.srcObject = stream;
+    video.play();
+    tick(); // Start the QR code detection loop
+  })
+  .catch((err) => {
+    console.error('Error accessing the camera:', err);
+  });
+
+function tick() {
+  if (video.readyState === video.HAVE_ENOUGH_DATA && !isRequesting) {
+    canvasElement.width = video.videoWidth;
+    canvasElement.height = video.videoHeight;
+    canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+    const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      var qrCodeMessage = code.data;
+      const pattern = /\?id=(\d+)&name=([^&]+)/;
+      const match = qrCodeMessage.match(pattern);
+      if (match) {
+        const id = match[1];
+        const name = decodeURIComponent(match[2]);
+        var api_url = "https://script.google.com/macros/s/AKfycbz-2P5ORdHIw5P7o4bqlhkL9xN6eTuzhs68-yXcDWx_OQfWKI8DsAHGenmmy2p6lcC7/exec" + code.data;
+        isRequesting = true; // Set flag to indicate a request is being made
+        mark_attendance(api_url);
+        return; // Stop scanning once a QR code is detected
+      } else {
+        swal("Error!", "Wrong QR Code", "error");
+      }
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function mark_attendance(apiURL) {
+  swal({
+    title: 'Please wait...',
+    text: 'Validating',
+    icon: 'info',
+    button: false,
+    closeOnClickOutside: false,
+    closeOnEsc: false
+  });
+  fetch(apiURL, {
+      method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+      swal.close();
+      
+      swal("Done!", data.message, "success");
+      swal({
+        title: 'Done!',
+        text: data.message,
+        icon: 'success',
+      }).then(() => {
+        location.reload();
+      });
+
+      
+    })
+    .catch(error => {
+      
+      console.error('Error:', error);
+      swal({
+  title: 'Oops!!',
+  text: error,
+  icon: 'error',
+}).then(() => {
+  location.reload();
+});
+
+    });
+}
+
+
+    </script>
+
+  </body>
+</html>
