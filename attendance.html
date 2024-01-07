@@ -193,10 +193,13 @@ function tick() {
       if (match) {
         const id = match[1];
         const name = decodeURIComponent(match[2]);
-        var api_url = "https://script.google.com/macros/s/AKfycbz-2P5ORdHIw5P7o4bqlhkL9xN6eTuzhs68-yXcDWx_OQfWKI8DsAHGenmmy2p6lcC7/exec" + code.data;
-        isRequesting = true; // Set flag to indicate a request is being made
-        mark_attendance(api_url);
-        return; // Stop scanning once a QR code is detected
+        const imageDataURL = canvasElement.toDataURL(); 
+        
+        var api_url = "https://script.google.com/macros/s/AKfycbzwZ0Magml0qWGvxdYOlq9TDFJv4Ud8ZDsQgmnqMBMOZcIY_AJut-2jlkN7_MS7KjAl/exec";
+        isRequesting = true; 
+        mark_attendance(api_url,code.data,imageDataURL);
+        
+        return; 
       } else {
         swal("Error!", "Wrong QR Code", "error");
       }
@@ -205,7 +208,11 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-function mark_attendance(apiURL) {
+function mark_attendance(apiURL,text,img) {
+  const formData = new FormData();
+  formData.append('id',new URLSearchParams(text).get('id'));
+  formData.append('name',new URLSearchParams(text).get('name'));
+  formData.append('img',img);
   swal({
     title: 'Please wait...',
     text: 'Validating',
@@ -215,7 +222,8 @@ function mark_attendance(apiURL) {
     closeOnEsc: false
   });
   fetch(apiURL, {
-      method: 'GET',
+      method: 'POST',
+      body: formData
     })
     .then(response => response.json())
     .then(data => {
@@ -236,12 +244,12 @@ function mark_attendance(apiURL) {
       
       console.error('Error:', error);
       swal({
-  title: 'Oops!!',
-  text: error,
-  icon: 'error',
-}).then(() => {
-  location.reload();
-});
+        title: 'Oops!!',
+        text: error,
+        icon: 'error',
+      }).then(() => {
+        location.reload();
+      });
 
     });
 }
