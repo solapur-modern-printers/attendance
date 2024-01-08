@@ -197,7 +197,7 @@ function tick() {
         
         var api_url = "https://script.google.com/macros/s/AKfycbzwZ0Magml0qWGvxdYOlq9TDFJv4Ud8ZDsQgmnqMBMOZcIY_AJut-2jlkN7_MS7KjAl/exec";
         isRequesting = true; 
-        mark_attendance(api_url,code.data,imageDataURL);
+        mark_attendance(name,api_url,code.data,imageDataURL);
         
         return; 
       } else {
@@ -208,13 +208,13 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
-function mark_attendance(apiURL,text,img) {
+function mark_attendance(name,apiURL,text,img) {
   const formData = new FormData();
   formData.append('id',new URLSearchParams(text).get('id'));
   formData.append('name',new URLSearchParams(text).get('name'));
   formData.append('img',img);
   swal({
-    title: 'Please wait...',
+    title: 'Marking Attendance for - '+name+'. Please wait...',
     text: 'Validating',
     icon: 'info',
     button: false,
