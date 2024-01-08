@@ -214,8 +214,8 @@ function mark_attendance(name,apiURL,text,img) {
   formData.append('name',new URLSearchParams(text).get('name'));
   formData.append('img',img);
   swal({
-    title: 'Marking Attendance for - '+name+'. Please wait...',
-    text: 'Validating',
+    title: 'Please wait...',
+    text: 'Employee name : '+name,
     icon: 'info',
     button: false,
     closeOnClickOutside: false,
