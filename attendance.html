@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">  
-    <title>Qr Code Reader</title>
+    <title>Attendance Page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
@@ -195,7 +196,7 @@ function tick() {
         const name = decodeURIComponent(match[2]);
         const imageDataURL = canvasElement.toDataURL(); 
         
-        var api_url = "https://script.google.com/macros/s/AKfycbzwZ0Magml0qWGvxdYOlq9TDFJv4Ud8ZDsQgmnqMBMOZcIY_AJut-2jlkN7_MS7KjAl/exec";
+        var api_url = "https://script.google.com/macros/s/AKfycbxVzHlOkVrkcCrquHpHz34mNdUuUwsSMqenByxKupiRm6d2fA_fHfJWCHDDtcYQq50d/exec";
         isRequesting = true; 
         mark_attendance(name,api_url,code.data,imageDataURL);
         
