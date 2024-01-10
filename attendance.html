@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    
 
     <style>
       *{
@@ -136,6 +138,12 @@ textarea:hover::-webkit-scrollbar-thumb{
   transition: transform 0.3s ease;
   width: calc(100% / 2 - 10px);
 }
+
+.progress-dialog {
+    background-color: #3498db; 
+}
+
+
 .buttons button:active{
   transform: scale(0.95);
 }
@@ -195,14 +203,15 @@ function tick() {
         const id = match[1];
         const name = decodeURIComponent(match[2]);
         const imageDataURL = canvasElement.toDataURL(); 
-        
-        var api_url = "https://script.google.com/macros/s/AKfycbzB-1SGyACRN0J_hoUXEy1baZTAuYLCtgKLQeXGgaBASwFaUnkSJiGcd19y1KjgKVOM/exec";
+        var api_url = "https://script.google.com/macros/s/AKfycbxto-nY3ccc7HgPj-C0CVmzBO0NLWHDSmhp7ZJ6sZ-TkRhjgUVam2MT6X-uot_5s04T/exec";
         isRequesting = true; 
         mark_attendance(name,api_url,code.data,imageDataURL);
         
         return; 
       } else {
-        swal("Error!", "Wrong QR Code", "error");
+        Swal.fire("Error!", "Wrong QR Code", "error").then(()=>{
+          location.reload();
+        });
       }
     }
   }
@@ -214,13 +223,19 @@ function mark_attendance(name,apiURL,text,img) {
   formData.append('id',new URLSearchParams(text).get('id'));
   formData.append('name',new URLSearchParams(text).get('name'));
   formData.append('img',img);
-  swal({
+  let timerInterval;
+  Swal.fire({
     title: 'Please wait...',
     text: 'Employee name : '+name,
     icon: 'info',
     button: false,
-    closeOnClickOutside: false,
-    closeOnEsc: false
+    timer:10000,
+    timerProgressBar:true,
+    showCancelButton: false,
+    showCloseButton:false,
+    customClass: {
+        progressBar: 'progress-dialog'
+    },
   });
   fetch(apiURL, {
       method: 'POST',
@@ -228,10 +243,10 @@ function mark_attendance(name,apiURL,text,img) {
     })
     .then(response => response.json())
     .then(data => {
-      swal.close();
+      Swal.close();
       
-      swal("Done!", data.message, "success");
-      swal({
+      swal.fire("Done!", data.message, "success");
+      swal.fire({
         title: 'Done!',
         text: data.message,
         icon: 'success',
@@ -244,7 +259,7 @@ function mark_attendance(name,apiURL,text,img) {
     .catch(error => {
       
       console.error('Error:', error);
-      swal({
+      swal.fire({
         title: 'Oops!!',
         text: error,
         icon: 'error',
